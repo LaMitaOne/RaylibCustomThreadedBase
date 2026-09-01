@@ -6,6 +6,7 @@ A high-performance, threaded Delphi component that seamlessly embeds Raylib into
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/RaylibCustomThreadedBase)    
       
 <img width="740" height="472" alt="Unbenannt" src="https://github.com/user-attachments/assets/bb0e7cec-da6b-477b-adae-be7a5dcbe265" />      
+      
 yes you see right... 2400 fps on ryzen4500u vega igpu... ^^    :D       
      
 This base class provides a robust, drop-in architecture for running Raylib game loops entirely in the background, making it perfect for creating complex visualizations, editors, or interactive 3D tools directly inside Delphi.    
