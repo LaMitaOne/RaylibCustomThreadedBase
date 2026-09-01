@@ -1,5 +1,5 @@
 {*******************************************************************************
-  RaylibThreadedRenderer v0.1
+  RaylibThreadedRenderer v0.2
 ********************************************************************************
   A high-performance, threaded VCL Raylib component.
   Utilizing Raylib for off-screen/native rendering embedded in VCL.
@@ -9,6 +9,9 @@
   - Non-Blocking UI: Main thread remains responsive even at high load.
   - Precise Frame Pacing: QPC-based absolute frame deadlines with a hybrid
     Sleep/SpinWait strategy.
+  - RealFPS Monitoring: Counts the actual frames produced by the Raylib
+    render loop per second, allowing direct performance comparisons against
+    Skia or other engines (independent of VCL paint events).
 
    Author: Lara Miriam Tamy Reschke / LamitaOne
 
@@ -52,6 +55,11 @@ type
     FInitialized: Boolean;
     FWindowName: String;
 
+    { RealFPS Tracking }
+    FFrameCount: Integer;
+    FLastFpsTime: Int64;     // Last sample time in QPC ticks
+    FRealFPS: Integer;       // Measured frames-per-second inside the Raylib loop
+
     { Demo Mode State }
     FCubePosition: TVector3;
     FCubeVelocity: TVector3;
@@ -78,6 +86,8 @@ type
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
+    { RealFPS: Actual frames produced by the Raylib loop per second. }
+    property RealFPS: Integer read FRealFPS;
   published
     property Align;
     property Anchors;
@@ -94,12 +104,14 @@ implementation
 
 procedure THighResTimer.Init;
 begin
-  Frequency := TStopwatch.Frequency;
+  // Fallback if QueryPerformanceFrequency fails
+  if not QueryPerformanceFrequency(Frequency) then
+    Frequency := 0;
 end;
 
 function THighResTimer.GetTicks: Int64;
 begin
-  Result := TStopwatch.GetTimestamp;
+  QueryPerformanceCounter(Result);
 end;
 
 procedure THighResTimer.HybridWaitUntil(const ATargetTicks, ASpinNanoseconds: Int64);
@@ -133,6 +145,11 @@ begin
   Width := 800;
   Height := 600;
   FWindowName := 'RaylibThreadedBase_' + IntToStr(IntPtr(Self));
+
+  // RealFPS Init
+  FFrameCount := 0;
+  FLastFpsTime := 0;
+  FRealFPS := 0;
 
   // Demo Mode Init
   FCubePosition := Vector3Create(0, 0, 0);
@@ -218,7 +235,7 @@ begin
       {$ENDIF}
       try
         // 1. RAYLIB INITIALIZATION (In Thread)
-        SetConfigFlags(FLAG_MSAA_4X_HINT or FLAG_VSYNC_HINT);
+        SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(800, 600, PAnsiChar(AnsiString(FWindowName)));
 
         FRaylibWnd := FindWindowA(nil, PAnsiChar(AnsiString(FWindowName)));
@@ -242,6 +259,7 @@ begin
         NowTicks := Timer.GetTicks;
         LastFrameTicks := NowTicks;
         NextFrame := NowTicks;
+        FLastFpsTime := NowTicks; // Initialize FPS baseline
 
         // 4. THREAD GAME LOOP
         while not TThread.CheckTerminated do
@@ -263,6 +281,18 @@ begin
           // Render
           TimeSec := NowTicks / Freq;
           RenderEffect(TimeSec);
+
+          // -------------------------------------------------------------
+          // REAL FPS MEASUREMENT
+          // Count this frame and check if 1 second has passed since last sample
+          // -------------------------------------------------------------
+          Inc(FFrameCount);
+          if (NowTicks - FLastFpsTime) >= Freq then // Freq = 1 second in QPC ticks
+          begin
+            FRealFPS := Round(FFrameCount * Freq / (NowTicks - FLastFpsTime));
+            FFrameCount := 0;
+            FLastFpsTime := NowTicks;
+          end;
 
           // FPS PACING
           if FTargetFPS > 0 then
@@ -353,8 +383,6 @@ begin
 
     DrawGrid(20, 1.0);
   EndMode3D();
-
-  DrawText(PAnsiChar('Raylib Threaded Base - Flying Cube'), 10, 10, 20, BLACK);
 
   EndDrawing();
 

@@ -3,7 +3,7 @@ object FormRaylibSample: TFormRaylibSample
   Top = 0
   Caption = 'FormRaylibSample'
   ClientHeight = 442
-  ClientWidth = 628
+  ClientWidth = 740
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, Vcl.ExtCtrls,
   uRaylibCustomThreadedBase;
 
 type
@@ -15,11 +15,14 @@ type
     FRaylibView: TRaylibCustomThreadedBase;
     btnStart: TButton;
     btnStop: TButton;
-    btnToggleFPS: TButton;
-
+    pnlUI: TPanel;
+    tbFPS: TTrackBar;
+    lblFPS: TLabel;
+    FPSTimer: TTimer;
     procedure OnStartClick(Sender: TObject);
     procedure OnStopClick(Sender: TObject);
-    procedure OnToggleFPSClick(Sender: TObject);
+    procedure OnFPSTracking(Sender: TObject);
+    procedure OnFPSTimer(Sender: TObject);
   public
     { Public-Deklarationen }
   end;
@@ -34,8 +37,7 @@ implementation
 procedure TFormRaylibSample.FormCreate(Sender: TObject);
 begin
   Caption := 'Raylib Custom Threaded Base Sample';
-  ClientWidth := 800;
-  ClientHeight := 600;
+  Self.DoubleBuffered := True;
 
   // 1. Create the Custom Raylib Component
   FRaylibView := TRaylibCustomThreadedBase.Create(Self);
@@ -62,14 +64,44 @@ begin
   btnStop.Top := 10;
   btnStop.OnClick := OnStopClick;
 
-  // 4. Create Toggle FPS Button
-  btnToggleFPS := TButton.Create(Self);
-  btnToggleFPS.Parent := Self;
-  btnToggleFPS.Caption := 'Toggle 30/120 FPS';
-  btnToggleFPS.Width := 140;
-  btnToggleFPS.Left := 280;
-  btnToggleFPS.Top := 10;
-  btnToggleFPS.OnClick := OnToggleFPSClick;
+  // 4. Create FPS UI Panel (Hält Label und Trackbar zusammen sichtbar)
+  pnlUI := TPanel.Create(Self);
+  pnlUI.Parent := Self;
+  pnlUI.Left := 390;
+  pnlUI.Top := 5;
+  pnlUI.Width := 270;
+  pnlUI.Height := 65;
+  pnlUI.BevelOuter := bvNone; // Unsichtbarer Rahmen
+  pnlUI.Caption := '';
+  pnlUI.DoubleBuffered := True; // WICHTIG: Sonst flackert die Trackbar
+  // NEU: Z-Order nach vorne ziehen, damit es nicht von Raylib übermalt wird!
+  pnlUI.BringToFront;
+
+  // 5. Create FPS Label (Jetzt auf dem Panel)
+  lblFPS := TLabel.Create(Self);
+  lblFPS.Parent := pnlUI; // Parent ist jetzt das Panel!
+  lblFPS.Caption := 'Target: 60 | Real: 0 FPS';
+  lblFPS.Left := 10;
+  lblFPS.Top := 5;
+  lblFPS.Width := 200;
+  lblFPS.Font.Size := 10;
+
+  // 6. Create FPS TrackBar (Jetzt auf dem Panel)
+  tbFPS := TTrackBar.Create(Self);
+  tbFPS.Parent := pnlUI; // Parent ist jetzt das Panel!
+  tbFPS.Min := 1;
+  tbFPS.Max := 5000;
+  tbFPS.Position := 60;
+  tbFPS.Width := 250;
+  tbFPS.Left := 10;
+  tbFPS.Top := 25;
+  tbFPS.OnChange := OnFPSTracking;
+
+  // 7. Create FPS Update Timer
+  FPSTimer := TTimer.Create(Self);
+  FPSTimer.Interval := 500;
+  FPSTimer.OnTimer := OnFPSTimer;
+  FPSTimer.Enabled := True;
 end;
 
 procedure TFormRaylibSample.FormDestroy(Sender: TObject);
@@ -89,19 +121,20 @@ begin
     FRaylibView.Active := False;
 end;
 
-procedure TFormRaylibSample.OnToggleFPSClick(Sender: TObject);
-begin
-  if Assigned(FRaylibView) then
-  begin
-    if FRaylibView.TargetFPS = 60 then
-      FRaylibView.TargetFPS := 120
-    else if FRaylibView.TargetFPS = 120 then
-      FRaylibView.TargetFPS := 30
-    else
-      FRaylibView.TargetFPS := 60;
 
-    if Assigned(btnToggleFPS) then
-      btnToggleFPS.Caption := 'FPS: ' + IntToStr(FRaylibView.TargetFPS);
+procedure TFormRaylibSample.OnFPSTracking(Sender: TObject);
+begin
+  if Assigned(FRaylibView) and Assigned(tbFPS) then
+  begin
+    FRaylibView.TargetFPS := Round(tbFPS.Position);
+  end;
+end;
+
+procedure TFormRaylibSample.OnFPSTimer(Sender: TObject);
+begin
+  if Assigned(FRaylibView) and Assigned(lblFPS) then
+  begin
+    lblFPS.Caption := Format('Target: %d | Real: %d FPS', [FRaylibView.TargetFPS, FRaylibView.RealFPS]);
   end;
 end;
 
