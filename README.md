@@ -1,11 +1,12 @@
 # RaylibCustomThreadedBase
 A high-performance, threaded Delphi component that seamlessly embeds Raylib into VCL/FMX applications without blocking the UI thread.
     
-**RaylibCustomThreadedBase v0.1**  
+**RaylibCustomThreadedBase v0.2**  
      
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/RaylibCustomThreadedBase)    
       
-<img width="897" height="720" alt="Unbenannt" src="https://github.com/user-attachments/assets/421616c7-2f3b-44ef-9ad6-480d8e9a1c2f" />
+<img width="740" height="472" alt="Unbenannt" src="https://github.com/user-attachments/assets/bb0e7cec-da6b-477b-adae-be7a5dcbe265" />
+yes you see right... 2400 fps on ryzen4500u vega igpu... ^^    :D       
      
 This base class provides a robust, drop-in architecture for running Raylib game loops entirely in the background, making it perfect for creating complex visualizations, editors, or interactive 3D tools directly inside Delphi.    
      
@@ -34,4 +35,11 @@ Technical Requirements:
      Delphi (VCL or FMX)    
      Raylib for Delphi (or equivalent Raylib Pascal bindings)    
      Windows (due to Winapi.Windows usage for window parenting, though the QPC timer logic is cross-platform capable)    
-     
+      
+Latest Changes:    
+      
+  v0.2:      
+    -Added RealFPS Monitoring: Counts the actual frames produced by the Raylib    
+     render loop per second, allowing direct performance comparisons against     
+     Skia or other engines (independent of VCL paint events).    
+   
