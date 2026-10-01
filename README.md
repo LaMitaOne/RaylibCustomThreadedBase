@@ -1,7 +1,7 @@
 # RaylibCustomThreadedBase
 A high-performance, threaded Delphi component that seamlessly embeds Raylib into VCL/FMX applications without blocking the UI thread.
     
-**RaylibCustomThreadedBase v0.2**  
+**RaylibCustomThreadedBase v1.0*  
      
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/RaylibCustomThreadedBase)    
       
