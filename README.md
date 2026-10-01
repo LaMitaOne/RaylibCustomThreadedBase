@@ -38,9 +38,14 @@ Technical Requirements:
      Windows (due to Winapi.Windows usage for window parenting, though the QPC timer logic is cross-platform capable)    
       
 Latest Changes:    
-      
-  v0.2:      
-    -Added RealFPS Monitoring: Counts the actual frames produced by the Raylib    
+     
+  v1.0:
+     
+     Since my threadedbases rendering with thousands fps stable ...think we can put them to 1.0 :)       
+           
+  v0.2:   
+  
+     Added RealFPS Monitoring: Counts the actual frames produced by the Raylib    
      render loop per second, allowing direct performance comparisons against     
      Skia or other engines (independent of VCL paint events).    
    
