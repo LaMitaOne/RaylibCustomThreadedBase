@@ -1,5 +1,5 @@
 {*******************************************************************************
-  RaylibThreadedRenderer v0.2
+  RaylibThreadedRenderer v1.0
 ********************************************************************************
   A high-performance, threaded VCL Raylib component.
   Utilizing Raylib for off-screen/native rendering embedded in VCL.
